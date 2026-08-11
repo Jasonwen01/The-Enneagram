@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>九型人格测试</title>
+<title>九型人格测试 · 洞悉自己与他人的艺术</title>
 <meta name="description" content="基于《九型人格：洞悉自己与他人的艺术》（汪庭弘 著）编制的九型人格测试：108题完整版与9段描述快速版。">
 <style>
 :root{
@@ -950,12 +950,13 @@ function showBrowse(t){
   const wings = t===1 ? [9,2] : t===9 ? [8,1] : [t-1,t+1];
   $('rWing').innerHTML = `${t}号的两个侧翼为 <b>${wings[0]}号 · ${TYPE_NAMES[wings[0]]}</b> 与 <b>${wings[1]}号 · ${TYPE_NAMES[wings[1]]}</b>。` +
     `侧翼相当于性格的混血儿——${t}号偏向某一侧翼时，会表现出该型号更多的特质。准确的侧翼只有你自己最清楚，请结合书中描述自行判断。`;
-  $('browsePrev').textContent = `← ${TYPE_NAMES[t===1 ? 9 : t-1]}`;
-  $('browseNext').textContent = `${TYPE_NAMES[t===9 ? 1 : t+1]} →`;
+  $('browsePrev').textContent = `← ${t===1 ? 9 : t-1}号 ${TYPE_NAMES[t===1 ? 9 : t-1]}`;
+  $('browseNext').textContent = `${t===9 ? 1 : t+1}号 ${TYPE_NAMES[t===9 ? 1 : t+1]} →`;
   $('browseActions').classList.remove('hidden');
   $('resultActions').classList.add('hidden');
   show('screenResult');
   $('progressWrap').classList.add('hidden');
+  window.scrollTo(0, 0);
 }
 
 /* 复制结果 */
