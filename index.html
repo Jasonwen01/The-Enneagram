@@ -100,10 +100,24 @@ p{line-height:1.85;color:var(--muted);font-size:14.5px}
 .btn.ghost:hover{color:var(--accent)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
 
+/* ---------- 型号浏览 ---------- */
+.browseBox{margin-top:28px;border-top:1px dashed #d5d8e8;padding-top:22px}
+.browseBox h3{margin-bottom:8px}
+.browseBox>p{font-size:13px;margin-bottom:16px}
+.browseGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.browseCell{border:none;border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;color:#fff;font-weight:800;font-size:18px;transition:.18s;font-family:inherit}
+.browseCell .bsym{display:flex;justify-content:center;margin-bottom:4px}
+.browseCell .bsym svg{width:30px;height:30px;color:#fff}
+.browseCell small{display:block;font-weight:600;font-size:11.5px;margin-top:3px;opacity:.95}
+.browseCell:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(30,25,80,.28)}
+.browseCell:active{transform:translateY(-1px)}
+
 /* ---------- 结果 ---------- */
 .resultTop{text-align:center;padding:10px 0 20px}
 .resultTop .kicker{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:2px;margin-bottom:8px}
 .bigType{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0 6px}
+.tsym{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 8px 18px rgba(30,25,80,.25)}
+.tsym svg{width:40px;height:40px;color:#fff}
 .bigType .tnum{font-size:74px;font-weight:900;line-height:1;background:linear-gradient(135deg,#5b5bd6,#e8798c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .bigType .tinfo{text-align:left}
 .bigType .tinfo .tname{font-size:26px;font-weight:800}
@@ -197,6 +211,11 @@ p{line-height:1.85;color:var(--muted);font-size:14.5px}
         <span class="count">约 3 分钟 · 按符合度排序</span>
       </div>
     </div>
+    <div class="browseBox">
+      <h3>直接查看 1-9 号详解</h3>
+      <p>不必答题，直接浏览九种类型的完整详解：核心写照、性格原动力、压力/健康状态、代表人物、沟通偏好与自我成长建议。</p>
+      <div class="browseGrid" id="browseGrid"></div>
+    </div>
     <div class="notice">
       <b>答题前请留意（书中原话）</b>
       世界上没有 100% 准确的测试表，它们只能作为行为或性格判断的参考。真正准确的判断，从古至今，依然是人对人的了解。请在答题时回想<b>过往真实的行为与内在感受</b>，而非「理想中的自己」——行为本身不是绝对尺度，关键在于内在感受是否与行为一致。
@@ -244,8 +263,9 @@ p{line-height:1.85;color:var(--muted);font-size:14.5px}
   <!-- 结果 -->
   <section id="screenResult" class="card hidden">
     <div class="resultTop">
-      <div class="kicker">你的主要人格类型</div>
+      <div class="kicker" id="rKicker">你的主要人格类型</div>
       <div class="bigType">
+        <div class="tsym" id="rSym" style="background:#27ae60"></div>
         <div class="tnum" id="rNum">9</div>
         <div class="tinfo">
           <div class="tname" id="rName">和谐型</div>
@@ -304,10 +324,15 @@ p{line-height:1.85;color:var(--muted);font-size:14.5px}
       </div>
     </div>
 
-    <div class="actions">
+    <div class="actions" id="resultActions">
       <button class="btn ghost" id="btnCopy">复制结果</button>
       <button class="btn ghost" id="btnRestart">重新测试</button>
       <button class="btn primary" id="btnHome">返回首页</button>
+    </div>
+    <div class="actions hidden" id="browseActions">
+      <button class="btn ghost" id="browsePrev">← 上一型</button>
+      <button class="btn ghost" id="browseNext">下一型 →</button>
+      <button class="btn primary" id="browseHome">返回首页</button>
     </div>
   </section>
 </div>
@@ -336,6 +361,69 @@ const TYPE_NICKS = {
 const TYPE_COLORS = {
   1:"#d4a017", 2:"#e8708a", 3:"#2e86de", 4:"#8e6fb8", 5:"#1f8a70",
   6:"#e67e22", 7:"#e5b53c", 8:"#c0392b", 9:"#27ae60"
+};
+/* 各型号简略图（内联 SVG，currentColor 控制颜色） */
+const TYPE_SYMBOLS = {
+  1:`<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 22 V78 M50 78 L22 92 M50 78 L78 92"/>
+      <path d="M18 30 H82"/>
+      <path d="M18 30 V40 M82 30 V40"/>
+      <path d="M6 40 H30 M70 40 H94"/>
+      <path d="M6 40 Q18 58 30 40 M70 40 Q82 58 94 40"/>
+    </g></svg>`,
+  2:`<svg viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" d="M50 88 C22 64 8 46 14 28 C18 15 34 12 50 26 C66 12 82 15 86 28 C92 46 78 64 50 88 Z"/></svg>`,
+  3:`<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 12 V20"/>
+      <path d="M30 20 H70 V42 Q70 56 50 56 Q30 56 30 42 Z"/>
+      <path d="M30 28 Q14 28 14 40 Q14 52 30 52"/>
+      <path d="M70 28 Q86 28 86 40 Q86 52 70 52"/>
+      <path d="M50 56 V74 M40 74 H60 M34 88 H66"/>
+    </g></svg>`,
+  4:`<svg viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="
+      M32 18 Q54 14 72 20 Q92 28 90 52 Q88 78 68 82 Q54 86 44 76 Q32 84 22 74 Q10 60 14 44 Q16 26 32 18 Z
+      M46 54 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0
+      M30 38 m-3.6 0 a3.6 3.6 0 1 0 7.2 0 a3.6 3.6 0 1 0 -7.2 0
+      M58 30 m-3.6 0 a3.6 3.6 0 1 0 7.2 0 a3.6 3.6 0 1 0 -7.2 0
+      M74 52 m-3.6 0 a3.6 3.6 0 1 0 7.2 0 a3.6 3.6 0 1 0 -7.2 0
+      M54 76 m-3.6 0 a3.6 3.6 0 1 0 7.2 0 a3.6 3.6 0 1 0 -7.2 0"/></svg>`,
+  5:`<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 76 V42 Q28 34 38 34 Q46 34 50 42 V76"/>
+      <path d="M72 76 V42 Q72 34 62 34 Q54 34 50 42 V76"/>
+      <path d="M28 42 Q28 54 50 54 M72 42 Q72 54 50 54"/>
+      <path d="M26 76 H74"/>
+      <circle cx="66" cy="26" r="15"/>
+      <path d="M77 37 L90 50"/>
+    </g></svg>`,
+  6:`<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 10 L82 22 V50 Q82 78 50 92 Q18 78 18 50 V22 Z"/>
+      <path d="M42 46 Q42 30 50 30 Q60 30 60 41 Q60 49 50 53 V58"/>
+    </g><circle cx="50" cy="68" r="3.4" fill="currentColor"/></svg>`,
+  7:`<svg viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="50" cy="50" r="38"/>
+        <path d="M38 40 Q42 35 46 40"/>
+        <path d="M54 40 Q58 35 62 40"/>
+        <path d="M38 57 Q50 70 62 57"/>
+      </g>
+      <circle cx="37" cy="52" r="4" fill="currentColor" opacity=".35"/>
+      <circle cx="63" cy="52" r="4" fill="currentColor" opacity=".35"/>
+    </svg>`,
+  8:`<svg viewBox="0 0 100 100" aria-hidden="true">
+      <path fill="currentColor" fill-rule="evenodd" d="
+        M22 64 V36 L38 50 L50 28 L62 50 L78 36 V64 Z
+        M30 44 a2.8 2.8 0 1 0 5.6 0 a2.8 2.8 0 1 0 -5.6 0
+        M50 38 a2.8 2.8 0 1 0 5.6 0 a2.8 2.8 0 1 0 -5.6 0
+        M70 44 a2.8 2.8 0 1 0 5.6 0 a2.8 2.8 0 1 0 -5.6 0"/>
+      <path fill="none" stroke="currentColor" stroke-width="5" d="M16 64 H84"/>
+    </svg>`,
+  9:`<svg viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="50" cy="50" r="38"/>
+        <path d="M50 12 C34 24 34 40 50 50 C66 60 66 76 50 88"/>
+      </g>
+      <circle cx="50" cy="29" r="8" fill="currentColor"/>
+      <circle cx="50" cy="71" r="8" fill="currentColor"/>
+    </svg>`
 };
 const CENTERS = {
   1:{c:"腹中心（本能）",d:"腹中心类型将焦点放在存在本身，处理问题多半与自我遗忘和愤怒有关，本能就是行动。"},
@@ -606,6 +694,21 @@ function toast(msg){
 $('modeFull').onclick = ()=>{ mode='full'; startFull(); };
 $('modeQuick').onclick = ()=>{ mode='quick'; startRank(); };
 
+/* 首页：直接浏览 1-9 号详解 */
+const browseGrid = $('browseGrid');
+for(let t=1; t<=9; t++){
+  const c = document.createElement('div');
+  c.className = 'browseCell';
+  c.style.background = TYPE_COLORS[t];
+  c.innerHTML = `<div class="bsym">${TYPE_SYMBOLS[t]}</div><span>${t}</span><small>${TYPE_NAMES[t]}</small>`;
+  c.onclick = ()=> showBrowse(t);
+  browseGrid.appendChild(c);
+}
+let browseCur = 1;
+$('browsePrev').onclick = ()=> showBrowse(browseCur===1 ? 9 : browseCur-1);
+$('browseNext').onclick = ()=> showBrowse(browseCur===9 ? 1 : browseCur+1);
+$('browseHome').onclick = ()=>{ show('screenHome'); $('progressWrap').classList.add('hidden'); };
+
 /* ---------- 完整版 108 题 ---------- */
 const TOTAL_Q = Object.keys(QUESTIONS).reduce((s,k)=>s+QUESTIONS[k].length,0); // 108
 let curQ = 0;
@@ -742,16 +845,15 @@ function computeQuick(){
 /* ============================================================
    结果页
    ============================================================ */
-function showResult(res){
-  const t = res.main;
+/* 通用：渲染某型号的详解内容（测试结果与浏览模式共用） */
+function renderTypeCommon(t){
   $('rNum').textContent = t;
   $('rName').textContent = `${t}号 · ${TYPE_NAMES[t]}`;
   $('rNick').textContent = '「' + TYPE_NICKS[t] + '」';
   $('rCenter').textContent = CENTERS[t].c;
+  $('rSym').innerHTML = TYPE_SYMBOLS[t];
+  $('rSym').style.background = TYPE_COLORS[t];
   $('rPortrait').textContent = PORTRAITS[t];
-  $('rScoreNote').textContent = res.source==='full'
-    ? `完整版 108 题 · 每题 1~5 分，单类型满分 60 分`
-    : `快速版 · 9 段描述按符合度排序，位置权重 9~1 分`;
   $('rStress').innerHTML = `<b>${ARROWS[t].press}号 · ${TYPE_NAMES[ARROWS[t].press]}</b><br>${STRESS_DESC[t]}`;
   $('rSecure').innerHTML = `<b>${ARROWS[t].secure}号 · ${TYPE_NAMES[ARROWS[t].secure]}</b><br>${SECURE_DESC[t]}`;
 
@@ -775,18 +877,31 @@ function showResult(res){
 
   // 自我成长
   $('rGrowth').innerHTML = GROWTH[t].map(x=>`<li>${x}</li>`).join('');
+}
+
+/* 测试结果（完整版 / 快速版） */
+function showResult(res){
+  const t = res.main;
+  renderTypeCommon(t);
+  $('rKicker').textContent = '你的主要人格类型';
+  $('rScoreNote').classList.remove('hidden');
+  $('rScoreNote').textContent = res.source==='full'
+    ? `完整版 108 题 · 每题 1~5 分，单类型满分 60 分`
+    : `快速版 · 9 段描述按符合度排序，位置权重 9~1 分`;
 
   // 侧翼：相邻两型中得分更高者
   const wings = t===1 ? [9,2] : t===9 ? [8,1] : [t-1,t+1];
   const wScore = wings.map(w=>({w, s:res.scores[w]}));
   wScore.sort((a,b)=>b.s-a.s);
   const wingMain = wScore[0].w, wingAlt = wScore[1].w;
+  $('wingSection').classList.remove('hidden');
   $('rWing').innerHTML = `你最强的侧翼倾向为 <b>${wingMain}号 · ${TYPE_NAMES[wingMain]}</b>` +
     (res.source==='full' ? `（得分 ${res.scores[wingMain]}）` : `（排序第 ${res.sorted.indexOf(wingMain)+1} 位）`) +
     `，其次是 ${wingAlt}号 · ${TYPE_NAMES[wingAlt]}。侧翼相当于性格的混血儿：` +
     `当 ${t} 号偏向 ${wingMain} 号时，会更明显地表现出 ${TYPE_NAMES[wingMain]} 的特质。准确的侧翼只有你自己最清楚——是否吻合，请结合书中描述自行判断。`;
 
   // 分数条
+  $('scoreBars').classList.remove('hidden');
   const bars = $('scoreBars');
   bars.innerHTML = '';
   const max = res.source==='full' ? 60 : 9;
@@ -808,6 +923,8 @@ function showResult(res){
     });
   }, 60); });
 
+  $('resultActions').classList.remove('hidden');
+  $('browseActions').classList.add('hidden');
   show('screenResult');
   $('progressWrap').classList.add('hidden');
 
@@ -820,6 +937,25 @@ function showResult(res){
     scores: res.scores
   };
   try{ localStorage.setItem('enneagram_result', JSON.stringify(saved)); }catch(e){}
+}
+
+/* 浏览模式：直接查看某个型号的详解 */
+function showBrowse(t){
+  browseCur = t;
+  renderTypeCommon(t);
+  $('rKicker').textContent = '型号详解';
+  $('rScoreNote').classList.add('hidden');
+  $('scoreBars').classList.add('hidden');
+  $('wingSection').classList.remove('hidden');
+  const wings = t===1 ? [9,2] : t===9 ? [8,1] : [t-1,t+1];
+  $('rWing').innerHTML = `${t}号的两个侧翼为 <b>${wings[0]}号 · ${TYPE_NAMES[wings[0]]}</b> 与 <b>${wings[1]}号 · ${TYPE_NAMES[wings[1]]}</b>。` +
+    `侧翼相当于性格的混血儿——${t}号偏向某一侧翼时，会表现出该型号更多的特质。准确的侧翼只有你自己最清楚，请结合书中描述自行判断。`;
+  $('browsePrev').textContent = `← ${TYPE_NAMES[t===1 ? 9 : t-1]}`;
+  $('browseNext').textContent = `${TYPE_NAMES[t===9 ? 1 : t+1]} →`;
+  $('browseActions').classList.remove('hidden');
+  $('resultActions').classList.add('hidden');
+  show('screenResult');
+  $('progressWrap').classList.add('hidden');
 }
 
 /* 复制结果 */
