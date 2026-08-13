@@ -1081,10 +1081,13 @@ $('btnCopy').onclick = ()=>{
   const saved = JSON.parse(localStorage.getItem('enneagram_result')||'null');
   if(!saved) return;
   const t = saved.main;
+  const p = PASSIONS[t], m = MANUAL[t], comm = COMMUNICATION[t];
   const lines = [];
   lines.push(`【九型人格测试结果】${saved.at}`);
   lines.push(`主要类型：${t}号 ${TYPE_NAMES[t]}（${TYPE_NICKS[t]}）`);
-  lines.push(`中心：${CENTERS[t].c}｜激情：${PASSIONS[t].p}｜神圣德目：${PASSIONS[t].v}`);
+  lines.push(`所属中心：${CENTERS[t].c}`);
+  lines.push(`性格原动力（激情）：${p.p}——${p.pd}`);
+  lines.push(`健康品质（书中称神圣德目）：${p.v}——${p.vd}`);
   lines.push(`压力状态滑向 ${ARROWS[t].press}号 ${TYPE_NAMES[ARROWS[t].press]}；健康状态呈现 ${ARROWS[t].secure}号 ${TYPE_NAMES[ARROWS[t].secure]}`);
   if(saved.mode==='full'){
     const order = saved.sorted.map((n,i)=>`${i+1}. ${n}号 ${TYPE_NAMES[n]}（${saved.scores[n]}分）`).join('\n');
@@ -1093,9 +1096,24 @@ $('btnCopy').onclick = ()=>{
     lines.push(`排序：${saved.sorted.map((n,i)=>`${i+1}、${n}号 ${TYPE_NAMES[n]}`).join('；')}`);
   }
   lines.push(`\n核心写照：${PORTRAITS[t]}`);
+
+  lines.push(`\n沟通指南：`);
+  lines.push(`关注焦点：${m.focus}`);
+  lines.push(`说话方式：${m.sp}`);
+  lines.push(`面部表情：${m.fa}`);
+  lines.push(`身体语言：${m.bo}`);
+  lines.push(`性格陷阱：${m.tr}`);
+  lines.push(`沟通偏好——他们喜欢：${comm.like.join('；')}`);
+  lines.push(`他们讨厌：${comm.dislike.join('；')}`);
+  lines.push(`如果你是${t}号：${m.you.tips.join('；')}`);
+  lines.push(`切记：${m.you.note.replace(/^切记[：:]?/, '')}`);
+  lines.push(`如果对方是${t}号：${m.them.tips.join('；')}`);
+  lines.push(`切记：${m.them.note.replace(/^切记[：:]?/, '')}`);
+  lines.push(`沟通策略：${m.strat}`);
+
   lines.push(`\n自我成长建议：`);
   GROWTH[t].forEach((g,i)=>lines.push(`${i+1}. ${g}`));
-  lines.push(`\n—— 依据《九型人格：洞悉自己与他人的艺术》汪庭弘 著`);
+  lines.push(`\n—— 依据《九型人格：洞悉自己与他人的艺术》《九型人格——商业管理指南》汪庭弘 著 · 仅供自我认知参考`);
   const txt = lines.join('\n');
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(()=>toast('结果已复制到剪贴板'),()=>fallbackCopy(txt));
